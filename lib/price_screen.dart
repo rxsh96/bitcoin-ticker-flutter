@@ -13,10 +13,9 @@ class _PriceScreenState extends State<PriceScreen> {
   String _selectedCurrency = 'USD';
   String bitcoinValue = '?';
 
-  void getData() async {
+  void getData(String currency) async {
     try {
-      double data = await CoinData().getCoinData();
-      //13. We can't await in a setState(). So you have to separate it out into two steps.
+      double data = await CoinData().getCoinData(currency);
       setState(() {
         bitcoinValue = data.toStringAsFixed(0);
       });
@@ -28,7 +27,7 @@ class _PriceScreenState extends State<PriceScreen> {
   @override
   void initState() {
     super.initState();
-    getData();
+    getData(_selectedCurrency);
   }
 
   DropdownButton<String> androidDropdown(){
@@ -46,6 +45,7 @@ class _PriceScreenState extends State<PriceScreen> {
       onChanged: (value) {
         setState(() {
           _selectedCurrency = value;
+          getData(_selectedCurrency);
         });
       },
     );
@@ -60,7 +60,8 @@ class _PriceScreenState extends State<PriceScreen> {
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
       onSelectedItemChanged: (selectedIndex) {
-        print(selectedIndex);
+        _selectedCurrency = currenciesList[selectedIndex];
+        getData(_selectedCurrency);
       },
       children: pickerItems,
     );
@@ -88,7 +89,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = $bitcoinValue USD',
+                  '1 BTC = $bitcoinValue $_selectedCurrency',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.0,
