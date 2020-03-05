@@ -1,4 +1,5 @@
 import 'package:bitcoin_ticker/coin_data.dart';
+import 'package:bitcoin_ticker/crypto_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io' show Platform;
@@ -10,14 +11,18 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
 
-  String _selectedCurrency = 'USD';
-  String bitcoinValue = '?';
+  String _selectedCurrency = 'AUD';
 
-  void getData(String currency) async {
+  Map<String, String> coinValues = {};
+  bool isWaiting = false;
+
+  void getData() async {
+    isWaiting = true;
     try {
-      double data = await CoinData().getCoinData(currency);
+      var data = await CoinData().getCoinData(_selectedCurrency);
+      isWaiting = false;
       setState(() {
-        bitcoinValue = data.toStringAsFixed(0);
+        coinValues = data;
       });
     } catch (e) {
       print(e);
@@ -27,7 +32,7 @@ class _PriceScreenState extends State<PriceScreen> {
   @override
   void initState() {
     super.initState();
-    getData(_selectedCurrency);
+    getData();
   }
 
   DropdownButton<String> androidDropdown(){
@@ -45,7 +50,7 @@ class _PriceScreenState extends State<PriceScreen> {
       onChanged: (value) {
         setState(() {
           _selectedCurrency = value;
-          getData(_selectedCurrency);
+          getData();
         });
       },
     );
@@ -61,11 +66,13 @@ class _PriceScreenState extends State<PriceScreen> {
       itemExtent: 32.0,
       onSelectedItemChanged: (selectedIndex) {
         _selectedCurrency = currenciesList[selectedIndex];
-        getData(_selectedCurrency);
+        getData();
       },
       children: pickerItems,
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -78,26 +85,25 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              CryptoCard(
+                cryptoCurrency: 'BTC',
+                value: isWaiting ? '?' : coinValues['BTC'],
+                selectedCurrency: _selectedCurrency,
               ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = $bitcoinValue $_selectedCurrency',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
+              CryptoCard(
+                cryptoCurrency: 'ETH',
+                value: isWaiting ? '?' : coinValues['ETH'],
+                selectedCurrency: _selectedCurrency,
               ),
-            ),
+              CryptoCard(
+                cryptoCurrency: 'LTC',
+                value: isWaiting ? '?' : coinValues['LTC'],
+                selectedCurrency: _selectedCurrency,
+              ),
+            ],
           ),
           Container(
             height: 150.0,
